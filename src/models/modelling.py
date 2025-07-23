@@ -11,7 +11,7 @@ n_estimators = params['model_training']['n_estimators']
 max_depth = params['model_training']['max_depth']
 
 # Load the training data with Bag-of-Words features
-train_data = pd.read_csv("data/interim/train_bow.csv")
+train_data = pd.read_csv("data/interim/train_tfidf.csv")
 
 # Separate features and target variable
 x_train = train_data.drop(columns=['label']).values  # Features for training

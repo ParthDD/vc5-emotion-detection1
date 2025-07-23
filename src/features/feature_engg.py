@@ -4,7 +4,7 @@ import os
 import yaml
 import logging
 from typing import Tuple
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Set up logging
 os.makedirs('logs', exist_ok=True)
@@ -53,31 +53,31 @@ def extract_features_and_labels(
 
 def vectorize_text(
     X_train: np.ndarray, X_test: np.ndarray, max_features: int
-) -> Tuple[np.ndarray, np.ndarray, CountVectorizer]:
-    """Apply Bag of Words (CountVectorizer) and transform train and test data."""
+) -> Tuple[np.ndarray, np.ndarray, TfidfVectorizer]:
+    """Apply Bag of Words (Tfidf) and transform train and test data."""
     try:
-        vectorizer = CountVectorizer(max_features=max_features)
-        X_train_bow = vectorizer.fit_transform(X_train)
-        X_test_bow = vectorizer.transform(X_test)
-        logging.info("Applied CountVectorizer to train and test data.")
-        return X_train_bow, X_test_bow, vectorizer
+        vectorizer = TfidfVectorizer(max_features=max_features)
+        X_train_tfidf = vectorizer.fit_transform(X_train)
+        X_test_tfidf = vectorizer.transform(X_test)
+        logging.info("Applied Tf IDF to train and test data.")
+        return X_train_tfidf, X_test_tfidf, vectorizer
     except Exception as e:
         logging.error(f"Error in vectorization: {e}")
         raise
 
 def save_features(
-    X_train_bow: np.ndarray, y_train: np.ndarray,
-    X_test_bow: np.ndarray, y_test: np.ndarray
+    X_train_tfidf: np.ndarray, y_train: np.ndarray,
+    X_test_tfidf: np.ndarray, y_test: np.ndarray
 ) -> None:
     """Save the processed feature data to CSV files."""
     try:
         os.makedirs("data/interim", exist_ok=True)
-        train_df = pd.DataFrame(X_train_bow.toarray())
+        train_df = pd.DataFrame(X_train_tfidf.toarray())
         train_df['label'] = y_train
-        test_df = pd.DataFrame(X_test_bow.toarray())
+        test_df = pd.DataFrame(X_test_tfidf.toarray())
         test_df['label'] = y_test
-        train_df.to_csv("data/interim/train_bow.csv", index=False)
-        test_df.to_csv("data/interim/test_bow.csv", index=False)
+        train_df.to_csv("data/interim/train_tfidf.csv", index=False)
+        test_df.to_csv("data/interim/test_tfidf.csv", index=False)
         logging.info("Saved Bag-of-Words features to CSV files.")
     except Exception as e:
         logging.error(f"Error saving features: {e}")
@@ -90,8 +90,8 @@ def main() -> None:
         max_features = params['feature_engineering']['max_features']
         train_data, test_data = load_data("data/processed/train.csv", "data/processed/test.csv")
         X_train, y_train, X_test, y_test = extract_features_and_labels(train_data, test_data)
-        X_train_bow, X_test_bow, _ = vectorize_text(X_train, X_test, max_features)
-        save_features(X_train_bow, y_train, X_test_bow, y_test)
+        X_train_tfidf, X_test_tfidf, _ = vectorize_text(X_train, X_test, max_features)
+        save_features(X_train_tfidf, y_train, X_test_tfidf, y_test)
         logging.info("Feature engineering completed successfully.")
     except Exception as e:
         logging.critical(f"Feature engineering failed: {e}")
